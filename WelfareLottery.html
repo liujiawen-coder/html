@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开奖啦开奖啦！</title>
+</head>
+
+<body
+    style="text-align: center; font-size:22px;background-repeat: repeat;background-attachment: fixed;background-size: 100%;"
+    background="https://w.wallhaven.cc/full/q2/wallhaven-q2wg55.png">
+
+    <p>
+    <form style="font-size:25px">
+        <input type="radio" id="doubleBall" name="balls" value="双色球" checked="true"> <b>双色球6+1</b>
+        <input type="radio" name="balls" value="大乐透"> <b>大乐透5+2</b>
+    </form>
+
+    <form>
+        <br>
+        排除的红球(空格分开): <input type="text" id="inputText" value="排除的红球(空格分开)" name="failBalls"><br>
+        排除的蓝球(空格分开): <input type="text" id="inputText2" value="排除的蓝球(空格分开)" name="failBalls"><br>
+    </form>
+    <br />
+    <label id="failLab"></label>
+    <label id="redLab" style="color:red">点击按钮获得红球</label>
+    <br />
+    <label id="blueLab" style="color:blue">点击按钮获得蓝球</label>
+    <br />
+    <button id="btn" style="font-size:22px;color:red" onclick="getResult()">点击摇奖</button>
+    </p>
+</body>
+<script>
+    const RewardType = {
+        DoubleBall: 1,
+        BigHappy: 2
+    }
+    var ballDatas = {
+        1: { maxRed: 33, maxBlue: 16, redCount: 6, blueCount: 1 },
+        2: { maxRed: 35, maxBlue: 12, redCount: 5, blueCount: 2 }
+    }
+    var type = RewardType.DoubleBall;
+    var failRedBalls = {};
+    var failBlueBalls = {};
+
+    function getResult() {
+        if (document.getElementById("doubleBall").checked)
+            this.type = RewardType.DoubleBall;
+        else
+            this.type = RewardType.BigHappy;
+
+        var label1 = document.getElementById("redLab");
+        label1.innerText = `红球：` + Object.keys(this.getRedBalls());
+        var label2 = document.getElementById("blueLab");
+        label2.innerText = `蓝球：` + Object.keys(this.getBlueBalls());
+
+    }
+    function getRedBalls() {
+        //1-33,1-16
+        //1-35,1-12
+        let data = this.ballDatas[this.type];
+        if (!data) {
+            alert(`类型非法！！！`);
+            return {};
+        }
+        let str = document.getElementById("inputText").value;
+        this.failRedBalls = {};
+        for (let value of str.split(` `))
+            this.failRedBalls[+value] = +value;
+
+        return this.getBalls(data.maxRed, data.redCount, this.failRedBalls);
+    }
+    function getBlueBalls() {
+        //1-33,1-16
+        //1-35,1-12
+        let data = this.ballDatas[this.type];
+        if (!data) {
+            alert(`类型非法！！！`);
+            return;
+        }
+        let str = document.getElementById("inputText2").value;
+        this.failBlueBalls = {};
+        for (let value of str.split(` `))
+            this.failBlueBalls[+value] = +value;
+
+        return this.getBalls(data.maxBlue, data.blueCount, this.failBlueBalls);
+    }
+    function getBalls(maxBall, needCount, failBalls = []) {
+        //算法1，从容器中逐个取出
+        let ballsArr = [], resultMap = {}, leftCount = maxBall;
+        for (let i = 1; i <= leftCount; i++)
+            ballsArr.push(i);
+        for (let i = 0; i < needCount; i++) {
+            let index = this.getRandomBalls(leftCount) - 1;
+            let ball = ballsArr[index];
+            while (failBalls[ball]) {
+                index = this.getRandomBalls(leftCount) - 1;
+                ball = this.ballsArr[index];
+            }
+            resultMap[ball] = ball;
+            //移除
+            ballsArr.splice(index, 1);
+            leftCount--;
+        }
+
+        // //算法2，检测重复
+        // let resultMap = {};
+        // for (let i = 0; i < needCount; i++) {
+        //     let ball = this.getRandomBalls(maxBall);
+        //     while (resultMap[ball] || failBalls[ball])
+        //         ball = this.getRandomBalls(maxBall);
+        //     resultMap[ball] = ball;
+        // }
+        return resultMap;
+    }
+    function getRandomBalls(maxNum = 33) {
+        return (1 + Math.floor(Math.random() * maxNum));
+    }
+
+</script>
+
+</html>
